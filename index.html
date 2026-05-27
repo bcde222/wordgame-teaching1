@@ -1,242 +1,298 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>单词重组互动教学 - 教师端</title>
-    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:16px;-webkit-tap-highlight-color:transparent}
-        .container{max-width:640px;margin:0 auto;background:#fff;padding:24px;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.12)}
-        .hidden{display:none!important}
-        h1{font-size:1.5em;color:#333;text-align:center}
-        .btn{padding:12px 24px;font-size:16px;cursor:pointer;border:none;border-radius:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;width:100%}
-        .btn:active{transform:scale(.97);opacity:.85}
-        .btn-primary{background:#007bff;color:#fff}
-        .btn-success{background:#28a745;color:#fff}
-        .btn-warning{background:#ffc107;color:#333}
-        .btn-danger{background:#dc3545;color:#fff}
-        .btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
-        .btn-group{display:flex;gap:10px;flex-wrap:wrap}
-        .btn-group .btn{flex:1;min-width:100px}
-        .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px}
-        .conn{display:flex;align-items:center;gap:6px;font-size:.8em;padding:4px 10px;border-radius:16px}
-        .conn.on{background:rgba(40,167,69,.15);color:#155724}
-        .conn.off{background:rgba(220,53,69,.15);color:#721c24}
-        .conn .dot{width:8px;height:8px;border-radius:50%}
-        .conn.on .dot{background:#28a745;animation:pulse 1.5s infinite}
-        .conn.off .dot{background:#dc3545}
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-        .room-box{text-align:center;padding:24px;background:#f0f4ff;border-radius:12px;margin-bottom:20px}
-        .room-label{font-size:.85em;color:#666;margin-bottom:8px;display:block}
-        .room-code{font-size:2.8em;font-weight:800;letter-spacing:12px;color:#007bff;font-family:'Courier New',monospace;user-select:all}
-        .room-hint{font-size:.78em;color:#999;margin-top:8px;display:block}
-        .stats{display:flex;gap:12px;margin-bottom:16px}
-        .stat{flex:1;background:#f8f9fa;border-radius:10px;padding:14px 8px;text-align:center}
-        .stat .n{font-size:1.8em;font-weight:800;color:#667eea;display:block}
-        .stat .l{font-size:.75em;color:#888;margin-top:4px;display:block}
-        .panel{background:#eef1f6;padding:16px;border-radius:10px;margin-bottom:16px}
-        .panel p{margin-bottom:8px;font-size:.88em;color:#555}
-        .preview{background:#fff;border:2px dashed #007bff;border-radius:10px;padding:16px;text-align:center;margin-bottom:16px;display:none}
-        .preview.show{display:block}
-        .preview .scrambled{font-size:1.6em;font-weight:800;color:#007bff;letter-spacing:4px;font-family:'Courier New',monospace;margin:8px 0}
-        .preview .opts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}
-        .preview .otag{background:#f0f4ff;border:2px solid #c5d3f0;padding:4px 12px;border-radius:6px;font-family:'Courier New',monospace;font-size:.88em}
-        .preview .otag.ok{background:#d4edda;border-color:#28a745;color:#155724;font-weight:700}
-        .preview .answer-hint{font-size:.82em;color:#28a745;margin-top:8px}
-        .slist{background:#f8f9fa;border-radius:10px;padding:14px;max-height:260px;overflow-y:auto}
-        .slist h3{font-size:.9em;color:#555;margin-bottom:10px}
-        .sitem{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#fff;border-radius:6px;margin-bottom:5px;font-size:.85em}
-        .stag{font-size:.78em;padding:2px 8px;border-radius:10px;font-weight:600}
-        .stag.ok{background:#d4edda;color:#155724}
-        .stag.no{background:#f8d7da;color:#721c24}
-        @media(max-width:480px){.container{padding:16px}.stats{gap:8px}.room-code{font-size:2.2em;letter-spacing:8px}}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>英语抢答互动教学</title>
+<style>
+*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif}
+body{background:#1a1a2e;color:#fff;padding:20px;margin:0;min-height:100vh}
+.container{max-width:900px;margin:0 auto}
+.card{background:#27293d;padding:24px;border-radius:12px;margin-bottom:20px}
+button{padding:14px 24px;font-size:16px;margin:8px;background:#4a6cf7;color:white;border:none;border-radius:8px;cursor:pointer}
+button:active{opacity:.8}
+button:disabled{background:#666;cursor:not-allowed}
+.red{background:#e53935}
+.green{background:#28a745}
+select{padding:12px;font-size:16px;border-radius:8px;background:#fff;color:#333}
+#question{font-size:32px;font-weight:bold;margin:20px 0}
+#status{font-size:26px;margin:10px 0}
+#answer{font-size:28px;color:#ffab00;white-space:pre-line}
+input{padding:14px;font-size:16px;border-radius:8px;border:none;width:100%;max-width:300px;margin:8px 0}
+.hidden{display:none!important}
+.btn-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.opt-btn{padding:16px;font-size:18px;background:#333;border:2px solid #555;border-radius:10px;cursor:pointer;min-width:140px}
+.opt-btn:active{background:#4a6cf7}
+#stuStatus{font-size:20px;margin:10px 0;padding:12px;border-radius:8px}
+.stu-correct{background:rgba(40,167,69,.3);color:#28a745}
+.stu-wrong{background:rgba(229,57,53,.3);color:#e53935}
+</style>
 </head>
 <body>
 
-<div id="pageTeacher" class="container">
-    <div class="top">
-        <h1>👩‍🏫 教师控制台</h1>
-        <span class="conn" id="tConn"><span class="dot"></span><span>连接中</span></span>
-    </div>
+<!-- ========== 教师端 ========== -->
+<div id="pageTeacher" class="container hidden">
+<h1>🏆 英语抢答 - 教师端</h1>
+<div class="card">
+<p><strong>题型：</strong></p>
+<select id="mode">
+  <option value="en2cn">英译汉</option>
+  <option value="cn2en">汉译英</option>
+  <option value="fill">单词挖空填空</option>
+</select>
+<div class="btn-row" style="margin-top:12px">
+  <button onclick="nextQuestion()" id="nextBtn">📝 下一题</button>
+  <button onclick="resetRound()" class="red">🔄 重置本轮</button>
+</div>
+</div>
+<div class="card">
+<div id="question">点击下一题开始</div>
+<div id="status">等待抢答...</div>
+<div id="answer"></div>
+</div>
+</div>
 
-    <div class="room-box" id="roomBox">
-        <span class="room-label">📋 房间号（告诉学生此号码）</span>
-        <div class="room-code" id="roomCode">------</div>
-        <span class="room-hint">学生打开 bcde222.github.io/wordgame-teaching2/ 输入此号码加入课堂</span>
-    </div>
-
-    <div class="stats">
-        <div class="stat"><span class="n" id="tStuCount">0</span><span class="l">在线学生</span></div>
-        <div class="stat"><span class="n" id="tAnsCount">0</span><span class="l">已作答</span></div>
-        <div class="stat"><span class="n" id="tOkCount">0</span><span class="l">回答正确</span></div>
-    </div>
-
-    <div class="panel">
-        <p><strong>📋 模式：</strong>乱序重组 (Reorder)</p>
-        <p>点击生成新题。干扰项基于正确答案微调，增加辨识难度。</p>
-        <div class="btn-group">
-            <button class="btn btn-primary" id="genBtn" onclick="tGenerate()">🎲 生成新题目</button>
-            <button class="btn btn-warning" id="revealBtn" onclick="tReveal()" disabled>🔔 公布答案</button>
-            <button class="btn btn-danger" id="resetBtn" onclick="tReset()" disabled>🔄 重置</button>
-        </div>
-    </div>
-
-    <div class="preview" id="tPreview">
-        <div style="color:#888;font-size:.82em">当前题目</div>
-        <div class="scrambled" id="tScrambled"></div>
-        <div class="opts" id="tOpts"></div>
-        <div class="answer-hint" id="tAnswerHint"></div>
-    </div>
-
-    <div class="slist">
-        <h3>📊 学生作答情况</h3>
-        <div id="tStudentList"><p style="color:#999;text-align:center;padding:16px">等待学生加入...</p></div>
-    </div>
+<!-- ========== 学生端 ========== -->
+<div id="pageStudent" class="container hidden">
+<h1>🙋 英语抢答 - 学生端</h1>
+<div class="card">
+<p id="stuQuestion" style="font-size:28px;font-weight:bold;margin:16px 0">等待老师出题...</p>
+<div id="stuOpts" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:16px 0"></div>
+<input type="text" id="stuInput" placeholder="输入你的答案" class="hidden" style="max-width:250px;text-align:center">
+<button onclick="stuBuzz()" id="buzzBtn" class="green" style="font-size:22px;padding:16px 40px">🔔 点击抢答</button>
+<div id="stuStatus"></div>
+</div>
 </div>
 
 <script>
-let peer = null;
-let connections = {};
-let tCurrentQ = null;
-let tAnswered = new Set();
-
-const WORDS=[
-    {word:"reputation",cn:"名声"},{word:"employee",cn:"雇员"},{word:"graduation",cn:"毕业"},
-    {word:"security",cn:"安全"},{word:"social",cn:"社会的"},{word:"volunteer",cn:"志愿者"},
-    {word:"experience",cn:"经验"},{word:"challenge",cn:"挑战"},{word:"opportunity",cn:"机会"},
-    {word:"communication",cn:"交流"},{word:"education",cn:"教育"},{word:"technology",cn:"技术"},
-    {word:"environment",cn:"环境"},{word:"government",cn:"政府"},{word:"information",cn:"信息"}
+// ===== 教师端逻辑 =====
+const wordList = [
+{en:"employee",cn:"雇员,员工"},{en:"social",cn:"社会的"},{en:"reputation",cn:"声誉"},
+{en:"behavior",cn:"行为"},{en:"analyze",cn:"分析"},{en:"comfortable",cn:"舒适的"},
+{en:"treatment",cn:"治疗"},{en:"security",cn:"安全"},{en:"professional",cn:"专业的"},
+{en:"graduation",cn:"毕业"},{en:"tanker",cn:"油船"},{en:"submarine",cn:"潜艇"},
+{en:"welding",cn:"焊接"},{en:"container",cn:"集装箱"}
 ];
 
-function fakeWord(w){
-    if(w.length<2)return w;
-    let a=w.split(''),i=Math.floor(Math.random()*(a.length-1));
-    [a[i],a[i+1]]=[a[i+1],a[i]];
-    let f=a.join('');
-    if(f===w&&i<a.length-2){[a[i],a[i+2]]=[a[i+2],a[i]];f=a.join('');}
-    if(f===w)f=w.substring(1)+w[0];
-    return f;
+let currentWord = null;
+let correctPart = "";
+
+function makeBlank(word){
+  let mid = Math.floor(word.length/2);
+  correctPart = word.substr(mid,3);
+  return word.substr(0,mid)+"___"+word.substr(mid+3);
 }
 
-function makeQuestion(){
-    const obj=WORDS[Math.floor(Math.random()*WORDS.length)];
-    const correct=obj.word;
-    let scrambled=correct.split('').sort(()=>Math.random()-.5).join('');
-    if(scrambled===correct){const a=correct.split('');[a[0],a[a.length-1]]=[a[a.length-1],a[0]];scrambled=a.join('');}
-    let opts=[correct];
-    while(opts.length<4){const f=fakeWord(correct);if(f!==correct&&!opts.includes(f))opts.push(f);}
-    opts.sort(()=>Math.random()-.5);
-    return {scrambled,options:opts,answer:correct};
+function nextQuestion(){
+  localStorage.setItem("lock", "0");
+  localStorage.setItem("raced", "0");
+  localStorage.setItem("user", "");
+  localStorage.setItem("result", "");
+  localStorage.setItem("studentAnswer", "");
+  currentWord = wordList[Math.floor(Math.random()*wordList.length)];
+  const mode = document.getElementById("mode").value;
+  let show = "";
+  correctPart = "";
+  if(mode==="en2cn") show = currentWord.en;
+  else if(mode==="cn2en") show = currentWord.cn;
+  else if(mode==="fill") show = makeBlank(currentWord.en);
+  document.getElementById("question").innerText = show;
+  document.getElementById("status").innerText = "等待抢答...";
+  document.getElementById("answer").innerText = "";
+  document.getElementById("nextBtn").disabled = true;
+  localStorage.setItem("mode", mode);
+  localStorage.setItem("q", show);
+  localStorage.setItem("correctPart", correctPart);
+  localStorage.setItem("answer", mode==="en2cn" ? currentWord.cn : currentWord.en);
+  localStorage.setItem("tNewQ", Date.now().toString());
 }
 
-// 自动初始化教师端
-(function initTeacher(){
-    const room=String(Math.floor(100000+Math.random()*900000));
-    document.getElementById('roomCode').textContent=room;
-    setConn('tConn','connecting');
-
-    peer=new Peer('wg'+room,{debug:0});
-    peer.on('open',()=>setConn('tConn','on'));
-    peer.on('error',e=>{
-        console.error('Peer error:',e);
-        if(e.type==='unavailable-id'){peer.destroy();initTeacher();}
-        else setConn('tConn','off');
-    });
-    peer.on('close',()=>setConn('tConn','off'));
-    peer.on('connection',conn=>{
-        conn.on('open',()=>{
-            connections[conn.peer]={conn,name:'学生',answer:null,correct:null};
-            tRenderStudents();
-            if(tCurrentQ) conn.send({type:'question',scrambled:tCurrentQ.scrambled,options:tCurrentQ.options,mode:'reorder'});
-        });
-        conn.on('data',d=>{
-            if(d.type==='identity'){
-                connections[conn.peer].name=d.name;
-                tRenderStudents();
-            }else if(d.type==='answer'){
-                const c=connections[conn.peer];
-                if(c&&!tAnswered.has(conn.peer)){
-                    tAnswered.add(conn.peer);
-                    c.answer=d.answer;
-                    c.correct=(tCurrentQ&&d.answer===tCurrentQ.answer);
-                    tRenderStudents();
-                }
-                conn.send({type:'result',correct:c.correct,correctAnswer:tCurrentQ?tCurrentQ.answer:null});
-            }
-        });
-        conn.on('close',()=>{
-            delete connections[conn.peer];
-            tAnswered.delete(conn.peer);
-            tRenderStudents();
-        });
-    });
-})();
-
-function tGenerate(){
-    tCurrentQ=makeQuestion();
-    tAnswered.clear();
-    Object.values(connections).forEach(c=>{c.answer=null;c.correct=null;});
-    const pv=document.getElementById('tPreview');
-    pv.classList.add('show');
-    document.getElementById('tScrambled').textContent=tCurrentQ.scrambled;
-    document.getElementById('tOpts').innerHTML=tCurrentQ.options.map((o,i)=>{
-        const cls=o===tCurrentQ.answer?'otag ok':'otag';
-        return `<span class="${cls}">${'ABCD'[i]}. ${o}</span>`;
-    }).join('');
-    document.getElementById('tAnswerHint').textContent='✅ 正确答案：'+tCurrentQ.answer;
-    document.getElementById('revealBtn').disabled=false;
-    document.getElementById('resetBtn').disabled=false;
-    const msg={type:'question',scrambled:tCurrentQ.scrambled,options:tCurrentQ.options,mode:'reorder'};
-    Object.values(connections).forEach(c=>{try{c.conn.send(msg);}catch(e){}});
-    tRenderStudents();
+function resetRound(){
+  localStorage.setItem("lock", "0");
+  localStorage.setItem("raced", "0");
+  localStorage.setItem("user", "");
+  localStorage.setItem("result", "");
+  localStorage.setItem("studentAnswer", "");
+  document.getElementById("status").innerText = "已重置，可抢答";
+  document.getElementById("answer").innerText = "";
 }
 
-function tReveal(){
-    if(!tCurrentQ)return;
-    const msg={type:'reveal',answer:tCurrentQ.answer};
-    Object.values(connections).forEach(c=>{try{c.conn.send(msg);}catch(e){}});
+// 教师监听
+setInterval(()=>{
+  const user = localStorage.getItem("user");
+  const res = localStorage.getItem("result");
+  const raced = localStorage.getItem("raced");
+  const studentAnswer = localStorage.getItem("studentAnswer");
+  const answer = localStorage.getItem("answer");
+  if(raced==="1" && user && !res){
+    document.getElementById("status").innerText = `🏆 ${user} 抢到了！`;
+  }
+  if(res){
+    let msg = res==="correct" ? `🏆 ${user} ✅ 回答正确` : `🏆 ${user} ❌ 回答错误`;
+    document.getElementById("status").innerText = msg;
+    document.getElementById("answer").innerText = `学生答案：${studentAnswer || '未作答'}\n正确答案：${answer}`;
+    document.getElementById("nextBtn").disabled = false;
+  }
+}, 300);
+
+// ===== 学生端逻辑 =====
+let stuName = "";
+let stuRaced = false;
+let lastQ = "";
+
+function initStudent(){
+  stuName = localStorage.getItem("stuName") || prompt("请输入你的名字：") || "学生";
+  localStorage.setItem("stuName", stuName);
 }
 
-function tReset(){
-    tCurrentQ=null;tAnswered.clear();
-    Object.values(connections).forEach(c=>{c.answer=null;c.correct=null;try{c.conn.send({type:'reset'});}catch(e){}});
-    document.getElementById('tPreview').classList.remove('show');
-    document.getElementById('revealBtn').disabled=true;
-    document.getElementById('resetBtn').disabled=true;
-    tRenderStudents();
+function stuBuzz(){
+  const lock = localStorage.getItem("lock");
+  if(lock==="1"){ alert("已被别人抢到，等待下一题"); return; }
+  localStorage.setItem("lock", "1");
+  localStorage.setItem("raced", "1");
+  localStorage.setItem("user", stuName);
+  stuRaced = true;
+  document.getElementById("buzzBtn").disabled = true;
+  document.getElementById("buzzBtn").innerText = "已抢到，请作答！";
+
+  const mode = localStorage.getItem("mode");
+  if(mode==="fill"){
+    document.getElementById("stuInput").classList.remove("hidden");
+    document.getElementById("stuInput").focus();
+    document.getElementById("stuOpts").classList.add("hidden");
+  }else{
+    document.getElementById("stuInput").classList.add("hidden");
+    document.getElementById("stuOpts").classList.remove("hidden");
+  }
 }
 
-function tRenderStudents(){
-    const list=Object.values(connections);
-    document.getElementById('tStuCount').textContent=list.length;
-    document.getElementById('tAnsCount').textContent=tAnswered.size;
-    let ok=0;list.forEach(c=>{if(c.correct)ok++;});
-    document.getElementById('tOkCount').textContent=ok;
-    if(!list.length){
-        document.getElementById('tStudentList').innerHTML='<p style="color:#999;text-align:center;padding:16px">等待学生加入...</p>';
-        return;
+// 学生选择/提交
+document.getElementById("stuInput").addEventListener("keydown", function(e){
+  if(e.key==="Enter"){ stuSubmit(document.getElementById("stuInput").value); }
+});
+
+function stuOptClick(val){
+  stuSubmit(val);
+}
+
+function stuSubmit(val){
+  if(!stuRaced) return;
+  const answer = localStorage.getItem("answer") || "";
+  const studentAnswer = val.trim();
+  localStorage.setItem("studentAnswer", studentAnswer);
+
+  const mode = localStorage.getItem("mode");
+  let isCorrect = false;
+  if(mode==="fill"){
+    const correctPart = localStorage.getItem("correctPart") || "";
+    isCorrect = studentAnswer.toLowerCase() === correctPart.toLowerCase();
+  }else{
+    const answers = answer.split(/[,，]/).map(s=>s.trim().toLowerCase());
+    isCorrect = answers.includes(studentAnswer.toLowerCase());
+  }
+
+  localStorage.setItem("result", isCorrect ? "correct" : "wrong");
+
+  const el = document.getElementById("stuStatus");
+  if(isCorrect){
+    el.className = "stu-correct";
+    el.innerText = "✅ 回答正确！";
+  }else{
+    el.className = "stu-wrong";
+    el.innerText = `❌ 回答错误！正确答案：${answer}`;
+  }
+  document.getElementById("buzzBtn").innerText = "等待下一题...";
+  document.getElementById("stuInput").classList.add("hidden");
+}
+
+// 学生端轮询
+setInterval(()=>{
+  const newQ = localStorage.getItem("tNewQ") || "";
+  if(newQ !== lastQ){
+    lastQ = newQ;
+    stuRaced = false;
+    const q = localStorage.getItem("q") || "等待题目...";
+    const mode = localStorage.getItem("mode") || "en2cn";
+
+    document.getElementById("stuQuestion").innerText = q;
+    document.getElementById("stuStatus").innerText = "";
+    document.getElementById("stuStatus").className = "";
+    document.getElementById("buzzBtn").disabled = false;
+    document.getElementById("buzzBtn").innerText = "🔔 点击抢答";
+    document.getElementById("stuInput").classList.add("hidden");
+    document.getElementById("stuInput").value = "";
+
+    // 生成选项
+    if(mode==="en2cn" || mode==="cn2en"){
+      const answer = localStorage.getItem("answer") || "";
+      let opts = [answer];
+      const pool = wordList.map(w=>mode==="en2cn"?w.cn:w.en);
+      while(opts.length<4){
+        const r = pool[Math.floor(Math.random()*pool.length)];
+        if(!opts.includes(r)) opts.push(r);
+      }
+      opts.sort(()=>Math.random()-.5);
+      document.getElementById("stuOpts").classList.remove("hidden");
+      document.getElementById("stuOpts").innerHTML = opts.map(o=>
+        `<button class="opt-btn" onclick="stuOptClick('${o.replace(/'/g,"\\'")}')">${o}</button>`
+      ).join('');
+    }else{
+      document.getElementById("stuOpts").innerHTML = "";
     }
-    document.getElementById('tStudentList').innerHTML=list.map(c=>{
-        let tag='';
-        if(c.answer!==null){
-            if(c.correct)tag='<span class="stag ok">✅ 正确</span>';
-            else tag='<span class="stag no">❌ 错误</span>';
-        }
-        return `<div class="sitem"><span>👤 ${c.name}</span><span style="display:flex;align-items:center;gap:6px"><span style="font-family:monospace">${c.answer||'...'}</span>${tag}</span></div>`;
-    }).join('');
-}
+  }
 
-function setConn(id,state){
-    const el=document.getElementById(id);
-    if(!el)return;
-    if(state==='on')el.innerHTML='<span class="dot"></span><span>已连接</span>',el.className='conn on';
-    else if(state==='off')el.innerHTML='<span class="dot"></span><span>已断开</span>',el.className='conn off';
-    else el.innerHTML='<span class="dot"></span><span>连接中...</span>',el.className='conn off';
-    el.querySelector('.dot').style.background=state==='on'?'#28a745':state==='off'?'#dc3545':'#ffc107';
-}
+  // 检查结果
+  const res = localStorage.getItem("result");
+  const raced = localStorage.getItem("raced");
+  const user = localStorage.getItem("user");
+  if(res && raced==="1" && user===stuName && !stuRaced){
+    const el = document.getElementById("stuStatus");
+    const answer = localStorage.getItem("answer") || "";
+    if(res==="correct"){
+      el.className = "stu-correct";
+      el.innerText = "✅ 回答正确！";
+    }else{
+      el.className = "stu-wrong";
+      el.innerText = `❌ 回答错误！正确答案：${answer}`;
+    }
+    document.getElementById("buzzBtn").innerText = "等待下一题...";
+    document.getElementById("stuInput").classList.add("hidden");
+  }
+}, 300);
+
+// ===== 角色切换 =====
+(function(){
+  const r = new URLSearchParams(location.search).get('role');
+  if(r==='teacher'){
+    document.getElementById('pageTeacher').classList.remove('hidden');
+    document.getElementById('pageStudent').classList.add('hidden');
+  }else if(r==='student'){
+    document.getElementById('pageStudent').classList.remove('hidden');
+    document.getElementById('pageTeacher').classList.add('hidden');
+    initStudent();
+  }else{
+    // 首页选择
+    document.getElementById('pageTeacher').classList.add('hidden');
+    document.getElementById('pageStudent').classList.add('hidden');
+    document.body.innerHTML = `
+    <div class="container" style="text-align:center;padding-top:60px">
+      <h1 style="font-size:2.2em;margin-bottom:10px">🏆 英语抢答互动教学</h1>
+      <p style="color:#aaa;margin-bottom:36px">教师出题 · 学生抢答 · 实时互动 · 无需服务器</p>
+      <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap">
+        <div onclick="location.href='?role=teacher'" style="background:#27293d;padding:32px 28px;border-radius:16px;cursor:pointer;width:220px;border-top:4px solid #4a6cf7">
+          <span style="font-size:48px;display:block;margin-bottom:12px">👩‍🏫</span>
+          <h2>教师端</h2>
+          <p style="color:#aaa;font-size:14px">出题 · 控制 · 查看抢答</p>
+        </div>
+        <div onclick="location.href='?role=student'" style="background:#27293d;padding:32px 28px;border-radius:16px;cursor:pointer;width:220px;border-top:4px solid #28a745">
+          <span style="font-size:48px;display:block;margin-bottom:12px">🙋</span>
+          <h2>学生端</h2>
+          <p style="color:#aaa;font-size:14px">抢答 · 答题 · 查看结果</p>
+        </div>
+      </div>
+    </div>`;
+  }
+})();
 </script>
 </body>
 </html>
