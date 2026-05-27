@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>教师端</title>
+<style>
+*{box-sizing:border-box;font-family:Microsoft YaHei}
+body{background:#1a1a2e;color:#fff;padding:20px}
+.container{max-width:900px;margin:0 auto}
+.card{background:#27293d;padding:24px;border-radius:12px;margin-bottom:20px}
+button{padding:14px 24px;font-size:16px;margin:8px;background:#4a6cf7;color:white;border:none;border-radius:8px;cursor:pointer}
+button:disabled{background:#666;cursor:not-allowed}
+.red{background:#e53935}
+select{padding:12px;font-size:16px}
+#question{font-size:32px;font-weight:bold;margin:20px 0}
+#status{font-size:26px;margin:10px 0}
+#answer{font-size:28px;color:#ffab00;white-space:pre-line}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>英语抢答 - 教师端</h1>
+<div class="card">
+题型：
+<select id="mode">
+  <option value="en2cn">英译汉</option>
+  <option value="cn2en">汉译英</option>
+  <option value="fill">单词挖空填空</option>
+</select>
+<button onclick="nextQuestion()" id="nextBtn">下一题</button>
+<button onclick="resetRound()" class="red">重置本轮</button>
+</div>
+<div class="card">
+<div id="question">点击下一题开始</div>
+<div id="status">等待抢答...</div>
+<div id="answer"></div>
+</div>
+</div>
+
+<script>
+const wordList = [
+{en:"employee",cn:"雇员,员工"},{en:"social",cn:"社会的"},{en:"reputation",cn:"声誉"},
+{en:"behavior",cn:"行为"},{en:"analyze",cn:"分析"},{en:"comfortable",cn:"舒适的"},
+{en:"treatment",cn:"治疗"},{en:"security",cn:"安全"},{en:"professional",cn:"专业的"},
+{en:"graduation",cn:"毕业"},{en:"tanker",cn:"油船"},{en:"submarine",cn:"潜艇"},
+{en:"welding",cn:"焊接"},{en:"container",cn:"集装箱"}
+];
+
+let currentWord = null;
+let correctPart = "";
+
+// 生成挖空单词
+function makeBlank(word){
+  let mid = Math.floor(word.length/2);
+  correctPart = word.substr(mid,3);
+  return word.substr(0,mid)+"___"+word.substr(mid+3);
+}
+
+// 下一题逻辑
+function nextQuestion(){
+  localStorage.setItem("lock", "0");
+  localStorage.setItem("raced", "0");
+  localStorage.setItem("user", "");
+  localStorage.setItem("result", "");
+  localStorage.setItem("studentAnswer", "");
+  
+  currentWord = wordList[Math.floor(Math.random()*wordList.length)];
+  const mode = document.getElementById("mode").value;
+  let show = "";
+  correctPart = "";
+
+  if(mode==="en2cn") show = currentWord.en;
+  else if(mode==="cn2en") show = currentWord.cn;
+  else if(mode==="fill") show = makeBlank(currentWord.en);
+
+  document.getElementById("question").innerText = show;
+  document.getElementById("status").innerText = "等待抢答...";
+  document.getElementById("answer").innerText = "";
+  document.getElementById("nextBtn").disabled = true;
+
+  localStorage.setItem("mode", mode);
+  localStorage.setItem("q", show);
+  localStorage.setItem("correctPart", correctPart);
+  localStorage.setItem("answer", mode==="en2cn" ? currentWord.cn : currentWord.en);
+}
+
+// 重置本轮
+function resetRound(){
+  localStorage.setItem("lock", "0");
+  localStorage.setItem("raced", "0");
+  localStorage.setItem("user", "");
+  localStorage.setItem("result", "");
+  localStorage.setItem("studentAnswer", "");
+  document.getElementById("status").innerText = "已重置，可抢答";
+  document.getElementById("answer").innerText = "";
+}
+
+// 监听学生答题结果
+setInterval(()=>{
+  const user = localStorage.getItem("user");
+  const res = localStorage.getItem("result");
+  const raced = localStorage.getItem("raced");
+  const studentAnswer = localStorage.getItem("studentAnswer");
+  const answer = localStorage.getItem("answer");
+  
+  // 显示抢答状态
+  if(raced==="1" && user && !res){
+    document.getElementById("status").innerText = `🏆 ${user} 抢到了！`;
+  }
+
+  // 显示答题结果
+  if(res){
+    let msg = "";
+    if(res==="correct"){
+      msg = `🏆 ${user} ✅ 回答正确`;
+    }else{
+      msg = `🏆 ${user} ❌ 回答错误`;
+    }
+    document.getElementById("status").innerText = msg;
+    document.getElementById("answer").innerText = `学生答案：${studentAnswer || '未作答'}\n正确答案：${answer}`;
+    document.getElementById("nextBtn").disabled = false;
+  }
+}, 300);
+</script>
+</body>
+</html>
