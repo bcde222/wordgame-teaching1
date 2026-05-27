@@ -116,7 +116,7 @@ function fakeWord(w){
     let a=w.split(''),i=Math.floor(Math.random()*(a.length-1));
     [a[i],a[i+1]]=[a[i+1],a[i]];
     let f=a.join('');
-    if(f===w&amp;&amp;i<a.length-2){[a[i],a[i+2]]=[a[i+2],a[i]];f=a.join('');}
+    if(f===w&&i<a.length-2){[a[i],a[i+2]]=[a[i+2],a[i]];f=a.join('');}
     if(f===w)f=w.substring(1)+w[0];
     return f;
 }
@@ -127,11 +127,12 @@ function makeQuestion(){
     let scrambled=correct.split('').sort(()=>Math.random()-.5).join('');
     if(scrambled===correct){const a=correct.split('');[a[0],a[a.length-1]]=[a[a.length-1],a[0]];scrambled=a.join('');}
     let opts=[correct];
-    while(opts.length<4){const f=fakeWord(correct);if(f!==correct&amp;&amp;!opts.includes(f))opts.push(f);}
+    while(opts.length<4){const f=fakeWord(correct);if(f!==correct&&!opts.includes(f))opts.push(f);}
     opts.sort(()=>Math.random()-.5);
     return {scrambled,options:opts,answer:correct};
 }
 
+// 自动初始化教师端
 (function initTeacher(){
     const room=String(Math.floor(100000+Math.random()*900000));
     document.getElementById('roomCode').textContent=room;
@@ -157,10 +158,10 @@ function makeQuestion(){
                 tRenderStudents();
             }else if(d.type==='answer'){
                 const c=connections[conn.peer];
-                if(c&amp;&amp;!tAnswered.has(conn.peer)){
+                if(c&&!tAnswered.has(conn.peer)){
                     tAnswered.add(conn.peer);
                     c.answer=d.answer;
-                    c.correct=(tCurrentQ&amp;&amp;d.answer===tCurrentQ.answer);
+                    c.correct=(tCurrentQ&&d.answer===tCurrentQ.answer);
                     tRenderStudents();
                 }
                 conn.send({type:'result',correct:c.correct,correctAnswer:tCurrentQ?tCurrentQ.answer:null});
